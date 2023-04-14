@@ -26,9 +26,9 @@ class TerrainGen {
 		this.tileSize = tileSize;
 	}
 
-	public function getTerrain(color:FlxColor):FlxSprite {
+	public function getTerrain(x:Float, y:Float, color:FlxColor):FlxSprite {
 		var segment = sampleTerrain;
-		var terrain = new FlxSprite(0, 0);
+		var terrain = new FlxSprite(x, y);
 		terrain.makeGraphic(segment[0].length * tileSize, segment.length * tileSize, FlxColor.TRANSPARENT);
 		terrain.drawPolygon(interpolatePoints(segment), color);
 		return terrain;

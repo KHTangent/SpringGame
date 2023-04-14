@@ -1,16 +1,15 @@
 package objects;
 
 import flixel.FlxG;
-import flixel.addons.nape.FlxNapeSprite;
 import flixel.math.FlxRandom;
+import flixel.FlxSprite;
 import flixel.util.FlxColor;
 
-class Player extends FlxNapeSprite {
+class Player extends FlxSprite {
 	public function new(x:Float, y:Float) {
 		super(x, y);
 		makeGraphic(32, 32, FlxColor.LIME);
 		loadGraphic("assets/images/playerSprites/player.png", true);
-		this.createRectangularBody(32, 32);
 
 		animation.add("normal0", [0]);
 		animation.add("normal1", [1]);
