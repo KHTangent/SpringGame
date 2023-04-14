@@ -9,8 +9,9 @@ class PlayState extends FlxState {
 
 	override public function create() {
 		super.create();
-		terrainGen = new TerrainGen(32);
+		terrainGen = new TerrainGen(64);
 		var segment = terrainGen.getTerrain(FlxColor.GREEN);
+		segment.y += 256;
 		add(segment);
 	}
 
