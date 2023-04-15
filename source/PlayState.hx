@@ -10,13 +10,15 @@ import flixel.util.FlxColor;
 import objects.Player;
 
 class PlayState extends FlxState {
-	private inline static var GRAVITY:Float = 200;
+	private inline static var GRAVITY:Float = 800;
+	private inline static var FRICTION:Float = 0.15;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
 	private var segments:FlxSpriteGroup;
 	private var pVelocity:FlxPoint;
 	private var debugDot:FlxSprite;
+	private var groundedBuffer:Int = 0;
 
 	override public function create() {
 		super.create();
@@ -25,7 +27,7 @@ class PlayState extends FlxState {
 		segments = new FlxSpriteGroup();
 		var terrainX = 0.0;
 		var terrainY = 256.0;
-		for (_ in 0...5) {
+		for (_ in 0...20) {
 			var segment = terrainGen.getTerrain(terrainX, terrainY, FlxColor.GREEN);
 			terrainX += segment.width;
 			terrainY += segment.height;
@@ -49,18 +51,20 @@ class PlayState extends FlxState {
 		FlxG.worldBounds.set(0, 0, segments.width, segments.height);
 	}
 
-	private var skipGravity = false;
-
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
-		if (!skipGravity) {
-			pVelocity.y += GRAVITY * elapsed;
-		}
+		handleMovement(elapsed);
+		player.grounded = groundedBuffer > 0;
+	}
+
+	private function handleMovement(elapsed:Float) {
+		pVelocity.y += GRAVITY * elapsed;
 		var playerPos = new FlxPoint(player.x + player.width / 2, player.y + player.height);
 		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
+		var hasTouched = false;
 		for (i in 1...terrainGen.terrainPoints.length) {
 			var lineStart = terrainGen.terrainPoints[i - 1];
 			var lineEnd = terrainGen.terrainPoints[i];
@@ -68,18 +72,25 @@ class PlayState extends FlxState {
 			if (intersection == null) {
 				continue;
 			}
+			hasTouched = true;
 			nextPos = intersection;
-			skipGravity = true;
-			pVelocity.set(0, 0);
+			var normalVector = (new FlxPoint(lineEnd.y - lineStart.y, lineStart.x - lineEnd.x)).normalize();
+			player.angle = Math.atan2(normalVector.y, normalVector.x) * FlxAngle.TO_DEG + 90;
 			debugDot.setPosition(intersection.x, intersection.y);
-			for (i in 0...10) {
-				var s = new FlxSprite(lineStart.x + (lineEnd.x - lineStart.x) / 10 * i, lineStart.y + (lineEnd.y - lineStart.y) / 10 * i);
-				s.makeGraphic(4, 4, FlxColor.YELLOW);
-				add(s);
-			}
+			var normalForce = pVelocity.dotProduct(normalVector);
+			pVelocity.x -= normalVector.x * normalForce;
+			pVelocity.y -= normalVector.y * normalForce;
+			var frictionVector = pVelocity.clone().scale(-FRICTION);
+			pVelocity.add(frictionVector.x, frictionVector.y);
 			break;
 		}
-		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height);
+		if (hasTouched) {
+			groundedBuffer = 5;
+		}
+		else {
+			groundedBuffer--;
+		}
+		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height - 1);
 		debugDot.setPosition(playerPos.x, playerPos.y);
 		nextPos.put();
 	}
@@ -101,10 +112,6 @@ class PlayState extends FlxState {
 
 	// Thanks, Copilot
 	private function intersectsBounded(l1s:FlxPoint, l1e:FlxPoint, l2s:FlxPoint, l2e:FlxPoint):FlxPoint {
-		// trace("l1s:", l1s.x, l1s.y);
-		// trace("l1e:", l1e.x, l1e.y);
-		// trace("l2s:", l2s.x, l2s.y);
-		// trace("l2e:", l2e.x, l2e.y);
 		var intersection = lineIntersection(l1s, l1e, l2s, l2e);
 		if (intersection == null) {
 			return null;
