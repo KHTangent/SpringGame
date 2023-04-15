@@ -15,6 +15,7 @@ class Player extends FlxSprite {
 
 	public var grounded:Bool;
 	public var jumpAddVector:FlxPoint = null;
+	public var falling:Bool;
 
 	var xPlus:Float;
 	var yPlus:Float;
@@ -37,7 +38,8 @@ class Player extends FlxSprite {
 		charge = 0;
 		wasHolding = false;
 		holding = false;
-
+		
+		falling = true;
 		grounded = false;
 
 		maxCharge = 2;
@@ -53,7 +55,7 @@ class Player extends FlxSprite {
 		charge += elapsed * (cast holding ? 1 : 0);
 
 		if (!holding && wasHolding) {
-			jumpAddVector = FlxPoint.weak(0, -charge * 500).rotateByDegrees(angle);
+			jumpAddVector = FlxPoint.weak(0, -charge * 500 * (cast grounded ? 1 : 0)).rotateByDegrees(angle);
 
 			charge = 0;
 		}
@@ -66,7 +68,7 @@ class Player extends FlxSprite {
 		if (compressionIndex == 4)
 			compressionIndex--;
 
-		if (grounded || velocity.y <= 0)
+		if (grounded || !falling)
 			animation.play(normalImages[compressionIndex]);
 		else
 			animation.play(fallingImages[compressionIndex]);

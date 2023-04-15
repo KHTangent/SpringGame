@@ -78,11 +78,13 @@ class PlayState extends FlxState {
 			pVelocity.x -= normalVector.x * normalForce;
 			pVelocity.y -= normalVector.y * normalForce;
 			var frictionVector = pVelocity.clone().scale(-FRICTION);
-			pVelocity.add(frictionVector.x, frictionVector.y);
+			if (groundedBuffer > 0) pVelocity.add(frictionVector.x, frictionVector.y);
+
+
 			break;
 		}
 		if (hasTouched) {
-			groundedBuffer = 5;
+			groundedBuffer = 10;
 		}
 		else {
 			groundedBuffer--;
@@ -91,6 +93,9 @@ class PlayState extends FlxState {
 			pVelocity.add(player.jumpAddVector.x, player.jumpAddVector.y);
 			player.jumpAddVector = null;
 		}
+
+		player.falling = (pVelocity.y > 0);
+
 		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
 		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height - 1);
 		debugDot.setPosition(playerPos.x, playerPos.y);
