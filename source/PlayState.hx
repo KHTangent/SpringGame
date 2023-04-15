@@ -1,5 +1,6 @@
 package;
 
+import flixel.addons.display.FlxBackdrop;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -39,6 +40,12 @@ class PlayState extends FlxState {
 
 	override public function create() {
 		super.create();
+
+		for (i in 0...5) {
+			var bg = new FlxBackdrop('assets/images/background/layer$i.png', X);
+			bg.scrollFactor.set(0.1 * i, 0);
+			add(bg);
+		}
 
 		pVelocity = new FlxPoint(10, 0);
 		terrainGen = new TerrainGen(64);
@@ -178,7 +185,7 @@ class PlayState extends FlxState {
 		segment.immovable = true;
 		segments.add(segment);
 		springrolls.add(segment.springrolls);
-		bombs.add(segment.bombs);
+		// bombs.add(segment.bombs);
 		var padding = new FlxSprite(terrainX, terrainY + segment.height);
 		padding.makeGraphic(Std.int(segment.width), FlxG.height, FlxColor.GREEN);
 		segmentPaddings.add(padding);
