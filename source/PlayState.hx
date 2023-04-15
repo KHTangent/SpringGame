@@ -8,7 +8,7 @@ import flixel.util.FlxColor;
 import objects.Player;
 
 class PlayState extends FlxState {
-	private inline static var GRAVITY:Float = 200;
+	private inline static var GRAVITY:Float = 500;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
@@ -34,7 +34,7 @@ class PlayState extends FlxState {
 			FlxG.resetGame();
 		}
 		if (FlxG.keys.pressed.F) {
-			player.velocity.x = 5000 * elapsed;
+			player.velocity.x = 9000 * elapsed;
 		}
 		else {
 			player.velocity.x = 0;
@@ -43,6 +43,7 @@ class PlayState extends FlxState {
 			player.acceleration.y = 0;
 			player.velocity.y = 0;
 			rotatePlayer();
+			player.velocity.rotateByDegrees(player.angle);
 		}
 		else {
 			player.acceleration.y = GRAVITY;
@@ -62,7 +63,7 @@ class PlayState extends FlxState {
 			}
 			var bitmap = segment.framePixels;
 			for (x in 0...playerPositions.length) {
-				for (y in Std.int(playerPositions[x])...Std.int(segment.y + segment.height)) {
+				for (y in Std.int(segment.y)...Std.int(segment.y + segment.height)) {
 					if (bitmap.getPixel(playerPositions[x] - Std.int(segment.x), Std.int(y - segment.y)) > 0) {
 						pointsBelow[x] = y;
 						break;
@@ -70,14 +71,14 @@ class PlayState extends FlxState {
 				}
 			}
 		});
-		if (pointsBelow[1] != -1.0 && pointsBelow[2] != -1.0) {
-			var w = playerPositions[2] - playerPositions[1];
-			var h = pointsBelow[2] - pointsBelow[1];
-			player.angle = Math.atan2(h, w) * FlxAngle.TO_DEG;
-		}
-		else if (pointsBelow[0] != -1.0 && pointsBelow[1] != -1.0) {
+		if (pointsBelow[0] != -1.0 && pointsBelow[1] != -1.0) {
 			var w = playerPositions[1] - playerPositions[0];
 			var h = pointsBelow[1] - pointsBelow[0];
+			player.angle = Math.atan2(h, w) * FlxAngle.TO_DEG;
+		}
+		else if (pointsBelow[1] != -1.0 && pointsBelow[2] != -1.0) {
+			var w = playerPositions[2] - playerPositions[1];
+			var h = pointsBelow[2] - pointsBelow[1];
 			player.angle = Math.atan2(h, w) * FlxAngle.TO_DEG;
 		}
 		else {
