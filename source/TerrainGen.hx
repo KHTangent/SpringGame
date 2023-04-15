@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
@@ -13,15 +14,31 @@ enum abstract TileTypes(Int) to Int {
 
 class TerrainGen {
 	private var tileSize:Int;
-	private var sampleTerrain = [
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-		[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+	private var terrains = [
+		[
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		],
+		[
+			[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+		], 
+		[
+			[1, 0, 0],
+			[1, 1, 0],
+			[1, 1, 1],
+		]
 	];
 
 	public function new(tileSize:Int) {
@@ -29,7 +46,7 @@ class TerrainGen {
 	}
 
 	public function getTerrain(x:Float, y:Float, color:FlxColor):FlxSprite {
-		var segment = sampleTerrain;
+		var segment = terrains[FlxG.random.int(0, terrains.length - 1)];
 		var terrain = new FlxSprite(x, y);
 		terrain.makeGraphic(segment[0].length * tileSize, segment.length * tileSize, FlxColor.TRANSPARENT);
 		terrain.drawPolygon(interpolatePoints(segment), color);
@@ -37,7 +54,7 @@ class TerrainGen {
 	}
 
 	private function interpolatePoints(segment:Array<Array<Int>>):Array<FlxPoint> {
-		var points = [];
+		var points = [FlxPoint.weak(0, 0)];
 		var maxX = segment[0].length;
 		var maxY = segment.length;
 		var currentX = 0;
@@ -46,7 +63,6 @@ class TerrainGen {
 			while (segment[currentY][currentX] != TileTypes.SOLID) {
 				currentY++;
 			}
-			points.push(FlxPoint.weak(currentX * tileSize, currentY * tileSize));
 			while (segment[currentY][currentX] == TileTypes.SOLID) {
 				currentX++;
 			}
