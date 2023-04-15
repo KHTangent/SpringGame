@@ -1,10 +1,12 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import objects.Player;
 
@@ -30,7 +32,8 @@ class PlayState extends FlxState {
 		}
 		add(segments);
 
-		player = new Player(0, 64);
+		player = new Player(0, 0);
+		player.origin.set(player.width / 2, player.height);
 		player.acceleration.y = GRAVITY;
 		add(player);
 
@@ -45,7 +48,8 @@ class PlayState extends FlxState {
 		}
 		var isTouchingSomething = false;
 		segments.forEachAlive(segment -> {
-			if (FlxG.pixelPerfectOverlap(player, segment)) {
+			segment.drawFrame();
+			if (playerIsTouching(segment)) {
 				rotatePlayer();
 				player.acceleration.set(0, 0);
 				player.velocity.set(GRAVITY * FlxMath.fastSin(player.angle * FlxAngle.TO_RAD));
@@ -66,10 +70,9 @@ class PlayState extends FlxState {
 		];
 		var pointsBelow = [-1.0, -1.0, -1.0];
 		segments.forEachAlive(segment -> {
-			if (segment.x > playerPositions[1] || segment.x + segment.width < playerPositions[1]) {
+			if (segment.x > playerPositions[2] || segment.x + segment.width < playerPositions[0]) {
 				return;
 			}
-			segment.drawFrame();
 			var bitmap = segment.framePixels;
 			for (x in 0...playerPositions.length) {
 				for (y in Std.int(segment.y)...Std.int(segment.y + segment.height)) {
@@ -84,19 +87,20 @@ class PlayState extends FlxState {
 			player.angle = 0;
 			return;
 		}
-		var w = 0.0, h = 0.0;
-		if (pointsBelow[0] != -1.0 && pointsBelow[1] != -1.0) {
-			w = playerPositions[1] - playerPositions[0];
-			h = pointsBelow[1] - pointsBelow[0];
-		}
-		else if (pointsBelow[1] != -1.0 && pointsBelow[2] != -1.0) {
-			w = playerPositions[2] - playerPositions[1];
-			h = pointsBelow[2] - pointsBelow[1];
-		}
+		var w = playerPositions[2] - playerPositions[0];
+		var h = pointsBelow[2] - pointsBelow[0];
 		player.angle = Math.atan2(h, w) * FlxAngle.TO_DEG;
-		// Compensate for player slightly sinking into the ground
-		if (pointsBelow[1] < player.y + player.height) {
-			player.y--;
+	}
+
+	private function playerIsTouching(segment:FlxSprite):Bool {
+		if (player.y < segment.y) {
+			return false;
 		}
+		var playerMiddle = player.x + player.width / 2;
+		var bitmap = segment.framePixels;
+		if (bitmap.getPixel(Std.int(playerMiddle - segment.x), Std.int(player.y + player.height - segment.y)) > 0) {
+			return true;
+		}
+		return false;
 	}
 }
