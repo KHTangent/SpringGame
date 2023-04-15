@@ -187,7 +187,7 @@ class PlayState extends FlxState {
 		springrolls.add(segment.springrolls);
 		bombs.add(segment.bombs);
 		var padding = new FlxSprite(terrainX, terrainY + segment.height);
-		padding.makeGraphic(Std.int(segment.width), FlxG.height, FlxColor.GREEN);
+		padding.makeGraphic(Std.int(segment.width), FlxG.height * 2, FlxColor.GREEN);
 		segmentPaddings.add(padding);
 		terrainX += segment.width;
 		terrainY += segment.height;
