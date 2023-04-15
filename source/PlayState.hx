@@ -107,7 +107,7 @@ class PlayState extends FlxState {
 			player.kill();
 			FlxG.camera.target = null;
 			FlxG.camera.fade(FlxColor.BLACK, 1.5, FlxG.resetGame, true);
-			bomb.kill();
+			add(bomb.explode());
 		});
 
 		while (terrainX - player.x < GENERATION_TRESHOLD) {
