@@ -45,15 +45,11 @@ class Player extends FlxSprite {
 		compressionIndex = 0;
 
 		normalImages = ["normal0", "normal1", "normal2", "normal3"];
-		fallingImages = ["falling", "falling", "falling", "falling"];
+		fallingImages = ["falling0", "falling1", "falling2", "falling3"];
 	}
 
 	override public function update(elapsed:Float):Void {
-		super.update(elapsed);
-		return;
-
 		holding = FlxG.keys.pressed.SPACE;
-		grounded = (acceleration.y == 0);
 
 		charge += elapsed * (cast holding ? 1 : 0);
 
@@ -62,8 +58,6 @@ class Player extends FlxSprite {
 			x += jump.x / 10;
 			y += jump.y / 10;
 			velocity.add(jump.x, jump.y);
-
-			trace(grounded);
 
 			charge = 0;
 		}
