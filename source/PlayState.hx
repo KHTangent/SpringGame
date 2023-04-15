@@ -1,10 +1,12 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import objects.Player;
 
@@ -98,5 +100,32 @@ class PlayState extends FlxState {
 		if (pointsBelow[1] < player.y + player.height) {
 			player.y--;
 		}
+	}
+
+	// Thanks, Copilot
+	private function lineIntersection(l1s:FlxPoint, l1e:FlxPoint, l2s:FlxPoint, l2e:FlxPoint):FlxPoint {
+		var a1 = l1e.y - l1s.y;
+		var b1 = l1s.x - l1e.x;
+		var c1 = a1 * l1s.x + b1 * l1s.y;
+		var a2 = l2e.y - l2s.y;
+		var b2 = l2s.x - l2e.x;
+		var c2 = a2 * l2s.x + b2 * l2s.y;
+		var det = a1 * b2 - a2 * b1;
+		if (det == 0) {
+			return null;
+		}
+		return new FlxPoint((b2 * c1 - b1 * c2) / det, (a1 * c2 - a2 * c1) / det);
+	}
+
+	// Thanks, Copilot
+	private function intersectsBounded(l1s:FlxPoint, l1e:FlxPoint, l2s:FlxPoint, l2e:FlxPoint):Bool {
+		var intersection = lineIntersection(l1s, l1e, l2s, l2e);
+		if (intersection == null) {
+			return false;
+		}
+		return (intersection.x >= l1s.x && intersection.x <= l1e.x || intersection.x >= l1e.x && intersection.x <= l1s.x)
+			&& (intersection.y >= l1s.y && intersection.y <= l1e.y || intersection.y >= l1e.y && intersection.y <= l1s.y)
+			&& (intersection.x >= l2s.x && intersection.x <= l2e.x || intersection.x >= l2e.x && intersection.x <= l2s.x)
+			&& (intersection.y >= l2s.y && intersection.y <= l2e.y || intersection.y >= l2e.y && intersection.y <= l2s.y);
 	}
 }
