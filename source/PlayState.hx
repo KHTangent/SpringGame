@@ -34,9 +34,12 @@ class PlayState extends FlxState {
 	private var springrolls:FlxSpriteGroup;
 	private var bombs:FlxSpriteGroup;
 	private var hud:HUD;
+	private var splashHUD:SplashHUD;
+	private var gameStarted = false;
 
 	override public function create() {
 		super.create();
+
 		pVelocity = new FlxPoint(10, 0);
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
@@ -70,12 +73,19 @@ class PlayState extends FlxState {
 		FlxG.camera.setScrollBounds(0, null, null, null);
 		FlxG.camera.targetOffset.set(300, 50);
 		FlxG.worldBounds.set(0, 0, segments.width, segments.height);
+
+		splashHUD = new SplashHUD();
+		add(splashHUD);
 	}
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
-		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
-			FlxG.resetGame();
+		if (!gameStarted) {
+			if (FlxG.keys.justPressed.SPACE) {
+				gameStarted = true;
+				splashHUD.kill();
+			}
+			return;
 		}
 		handleMovement(elapsed);
 		braking = FlxG.keys.pressed.SHIFT;
@@ -89,7 +99,7 @@ class PlayState extends FlxState {
 		FlxG.overlap(player, bombs, (player:Player, bomb:Bomb) -> {
 			player.kill();
 			FlxG.camera.target = null;
-			FlxG.camera.fade(FlxColor.BLACK, 1.5, null, true);
+			FlxG.camera.fade(FlxColor.BLACK, 1.5, FlxG.resetGame, true);
 			bomb.kill();
 		});
 
