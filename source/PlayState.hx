@@ -11,7 +11,9 @@ import objects.Player;
 
 class PlayState extends FlxState {
 	private inline static var GRAVITY:Float = 800;
-	private inline static var FRICTION:Float = 0.15;
+	private inline static var DRAG_CO:Float = 0.0000005;
+
+	private var FRICTION:Array<Float> = [0.15, 0.35];
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
@@ -19,6 +21,7 @@ class PlayState extends FlxState {
 	private var pVelocity:FlxPoint;
 	private var debugDot:FlxSprite;
 	private var groundedBuffer:Int = 0;
+	private var breaking = 0;
 
 	override public function create() {
 		super.create();
@@ -37,7 +40,7 @@ class PlayState extends FlxState {
 		}
 		add(segments);
 		for (p in terrainGen.terrainPoints) {
-			var dot = new FlxSprite(p.x-2, p.y-2);
+			var dot = new FlxSprite(p.x - 2, p.y - 2);
 			dot.makeGraphic(4, 4, FlxColor.BLUE);
 			add(dot);
 		}
@@ -54,6 +57,7 @@ class PlayState extends FlxState {
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
+		breaking = cast FlxG.keys.pressed.SHIFT ? 1 : 0;
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
@@ -83,9 +87,8 @@ class PlayState extends FlxState {
 			var normalForce = pVelocity.dotProduct(normalVector);
 			pVelocity.x -= normalVector.x * normalForce;
 			pVelocity.y -= normalVector.y * normalForce;
-			var frictionVector = pVelocity.clone().scale(-FRICTION);
-			if (groundedBuffer > 0) pVelocity.add(frictionVector.x, frictionVector.y);
-
+			var frictionVector = pVelocity.clone().scale(-FRICTION[breaking]);
+			pVelocity.add(frictionVector.x, frictionVector.y);
 
 			break;
 		}
@@ -99,6 +102,12 @@ class PlayState extends FlxState {
 			pVelocity.add(player.jumpAddVector.x, player.jumpAddVector.y);
 			player.jumpAddVector = null;
 		}
+
+		var pSpeed = Math.sqrt(pVelocity.x * pVelocity.x + pVelocity.y + pVelocity.y);
+		var dragX = -(pVelocity.x / pSpeed) * pVelocity.x * pVelocity.x * DRAG_CO;
+		var dragY = -(pVelocity.y / pSpeed) * pVelocity.y * pVelocity.y * DRAG_CO;
+
+		pVelocity.add(dragX, dragY);
 
 		player.falling = (pVelocity.y > 0);
 
