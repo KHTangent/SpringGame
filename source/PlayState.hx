@@ -35,11 +35,6 @@ class PlayState extends FlxState {
 			segments.add(segment);
 		}
 		add(segments);
-		for (point in terrainGen.terrainPoints) {
-			var t = new FlxSprite(point.x - 3, point.y - 3);
-			t.makeGraphic(6, 6, FlxColor.BLUE);
-			add(t);
-		}
 
 		player = new Player(200, 0);
 		add(player);
@@ -63,17 +58,17 @@ class PlayState extends FlxState {
 	private function handleMovement(elapsed:Float) {
 		pVelocity.y += GRAVITY * elapsed;
 		var playerPos = new FlxPoint(player.x + player.width / 2, player.y + player.height);
-		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
+		var predicted = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
 		var hasTouched = false;
 		for (i in 1...terrainGen.terrainPoints.length) {
 			var lineStart = terrainGen.terrainPoints[i - 1];
 			var lineEnd = terrainGen.terrainPoints[i];
-			var intersection = intersectsBounded(playerPos, nextPos, lineStart, lineEnd);
+			var intersection = intersectsBounded(playerPos, predicted, lineStart, lineEnd);
 			if (intersection == null) {
 				continue;
 			}
 			hasTouched = true;
-			nextPos = intersection;
+			predicted = intersection;
 			var normalVector = (new FlxPoint(lineEnd.y - lineStart.y, lineStart.x - lineEnd.x)).normalize();
 			player.angle = Math.atan2(normalVector.y, normalVector.x) * FlxAngle.TO_DEG + 90;
 			debugDot.setPosition(intersection.x, intersection.y);
@@ -90,9 +85,14 @@ class PlayState extends FlxState {
 		else {
 			groundedBuffer--;
 		}
+		if (player.jumpAddVector != null) {
+			pVelocity.add(player.jumpAddVector.x, player.jumpAddVector.y);
+			player.jumpAddVector = null;
+		}
+		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
 		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height - 1);
 		debugDot.setPosition(playerPos.x, playerPos.y);
-		nextPos.put();
+		predicted.put();
 	}
 
 	// Thanks, Copilot
