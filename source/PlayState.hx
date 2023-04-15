@@ -4,11 +4,12 @@ import flixel.FlxG;
 import flixel.FlxState;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
+import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import objects.Player;
 
 class PlayState extends FlxState {
-	private inline static var GRAVITY:Float = 500;
+	private inline static var GRAVITY:Float = 800;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
@@ -33,19 +34,12 @@ class PlayState extends FlxState {
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
-		if (FlxG.keys.pressed.F) {
-			player.velocity.x = 9000 * elapsed;
-		}
-		else {
-			player.velocity.x = 0;
-		}
 		if (FlxG.pixelPerfectOverlap(player, segments.getFirstAlive())) {
-			player.acceleration.y = 0;
-			player.velocity.y = 0;
 			rotatePlayer();
+			player.acceleration.set(0, 0);
+			player.velocity.set(GRAVITY * FlxMath.fastSin(player.angle * FlxAngle.TO_RAD));
 			player.velocity.rotateByDegrees(player.angle);
-		}
-		else {
+		} else {
 			player.acceleration.y = GRAVITY;
 		}
 	}
