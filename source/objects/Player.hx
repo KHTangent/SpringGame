@@ -1,10 +1,7 @@
 package objects;
 
-import flixel.math.FlxMath;
 import flixel.FlxG;
-import flixel.math.FlxRandom;
 import flixel.FlxSprite;
-import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 
 class Player extends FlxSprite {
@@ -17,6 +14,7 @@ class Player extends FlxSprite {
 	var fallingImages:Array<String>;
 
 	public var grounded:Bool;
+	public var jumpAddVector:FlxPoint = null;
 
 	var xPlus:Float;
 	var yPlus:Float;
@@ -24,6 +22,7 @@ class Player extends FlxSprite {
 	public function new(x:Float, y:Float) {
 		super(x, y);
 		loadGraphic("assets/images/playerSprites/player.png", true);
+		antialiasing = true;
 
 		animation.add("normal0", [0]);
 		animation.add("normal1", [1]);
@@ -54,10 +53,7 @@ class Player extends FlxSprite {
 		charge += elapsed * (cast holding ? 1 : 0);
 
 		if (!holding && wasHolding) {
-			var jump = FlxPoint.weak(0, -charge * 500).rotateByDegrees(angle);
-			x += jump.x / 10;
-			y += jump.y / 10;
-			velocity.add(jump.x, jump.y);
+			jumpAddVector = FlxPoint.weak(0, -charge * 500).rotateByDegrees(angle);
 
 			charge = 0;
 		}
