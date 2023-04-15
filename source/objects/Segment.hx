@@ -40,6 +40,18 @@ class Segment extends FlxSprite {
 		}
 	}
 
+	override function kill() {
+		springrolls.kill();
+		deathTriggers.kill();
+		super.kill();
+	}
+
+	override function destroy() {
+		springrolls.destroy();
+		deathTriggers.destroy();
+		super.destroy();
+	}
+
 	private function interpolatePoints(x:Float, y:Float, segment:Array<Array<Int>>, tileSize:Int):Array<FlxPoint> {
 		var points = [FlxPoint.weak(0, 0)];
 		var maxX = segment[0].length;

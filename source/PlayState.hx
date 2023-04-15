@@ -1,6 +1,5 @@
 package;
 
-import objects.Bomb;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -8,18 +7,22 @@ import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
+import objects.Bomb;
 import objects.Player;
 import objects.Springroll;
 
 class PlayState extends FlxState {
 	private inline static var GRAVITY:Float = 800;
 	private inline static var DRAG_CO:Float = 0.0000005;
+	private inline static var GENERATION_TRESHOLD = 1280 * 3;
+	private inline static var GENERATION_BATCH = 4;
 
 	private var FRICTION:Array<Float> = [0.15, 0.35];
+
 	private var pVelocity:FlxPoint;
 	private var groundedBuffer:Int = 0;
 	private var score:Int = 0;
-	private var braking = 0;
+	private var braking = false;
 	private var terrainX = 0.0;
 	private var terrainY = 256.0;
 
@@ -39,7 +42,7 @@ class PlayState extends FlxState {
 		springrolls = new FlxSpriteGroup();
 		bombs = new FlxSpriteGroup();
 
-		for (_ in 0...20) {
+		for (_ in 0...GENERATION_BATCH) {
 			addSegment();
 		}
 		add(segments);
@@ -68,11 +71,11 @@ class PlayState extends FlxState {
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
-		braking = cast FlxG.keys.pressed.SHIFT ? 1 : 0;
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
 		handleMovement(elapsed);
+		braking = FlxG.keys.pressed.SHIFT;
 		player.grounded = groundedBuffer > 0;
 
 		FlxG.overlap(player, springrolls, (player:Player, springroll:Springroll) -> {
@@ -86,6 +89,18 @@ class PlayState extends FlxState {
 			FlxG.camera.fade(FlxColor.BLACK, 1.5, null, true);
 			bomb.kill();
 		});
+
+		while (terrainX - player.x < GENERATION_TRESHOLD) {
+			for (i in 0...GENERATION_BATCH) {
+				addSegment();
+			}
+			FlxG.worldBounds.set(0, 0, terrainX, terrainY);
+			segments.forEachAlive((segment:FlxSprite) -> {
+				if (segment.x < player.x - FlxG.width) {
+					segment.destroy();
+				}
+			});
+		}
 	}
 
 	private function handleMovement(elapsed:Float) {
@@ -110,7 +125,7 @@ class PlayState extends FlxState {
 			var normalForce = pVelocity.dotProduct(normalVector);
 			pVelocity.x -= normalVector.x * normalForce;
 			pVelocity.y -= normalVector.y * normalForce;
-			var frictionVector = pVelocity.clone().scale(-FRICTION[braking]);
+			var frictionVector = pVelocity.clone().scale(-FRICTION[braking ? 1 : 0]);
 			pVelocity.add(frictionVector.x, frictionVector.y);
 
 			break;
