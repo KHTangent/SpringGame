@@ -44,8 +44,8 @@ class TerrainGen {
 	}
 
 	public function getTerrain(x:Float, y:Float, color:FlxColor):FlxSprite {
-		if (terrainPoints.length > 0) {
-			terrainPoints.push(FlxPoint.get(0, 0));
+		if (terrainPoints.length == 0) {
+			terrainPoints.push(FlxPoint.get(x, y));
 		}
 		var segment = terrains[FlxG.random.int(0, terrains.length - 1)];
 		var terrain = new FlxSprite(x, y);

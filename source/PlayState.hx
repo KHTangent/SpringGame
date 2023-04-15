@@ -5,20 +5,22 @@ import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
-import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import objects.Player;
 
 class PlayState extends FlxState {
-	private inline static var GRAVITY:Float = 800;
+	private inline static var GRAVITY:Float = 200;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
 	private var segments:FlxSpriteGroup;
+	private var pVelocity:FlxPoint;
+	private var debugDot:FlxSprite;
 
 	override public function create() {
 		super.create();
+		pVelocity = new FlxPoint(0, 10);
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
 		var terrainX = 0.0;
@@ -31,75 +33,55 @@ class PlayState extends FlxState {
 			segments.add(segment);
 		}
 		add(segments);
+		for (point in terrainGen.terrainPoints) {
+			var t = new FlxSprite(point.x - 3, point.y - 3);
+			t.makeGraphic(6, 6, FlxColor.BLUE);
+			add(t);
+		}
 
-		player = new Player(0, 64);
-		player.acceleration.y = GRAVITY;
+		player = new Player(200, 0);
 		add(player);
+		debugDot = new FlxSprite(0);
+		debugDot.makeGraphic(4, 4, FlxColor.RED);
+		add(debugDot);
 
 		FlxG.camera.follow(player, LOCKON);
 		FlxG.worldBounds.set(0, 0, segments.width, segments.height);
 	}
+
+	private var skipGravity = false;
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
-		var isTouchingSomething = false;
-		segments.forEachAlive(segment -> {
-			if (FlxG.pixelPerfectOverlap(player, segment)) {
-				rotatePlayer();
-				player.acceleration.set(0, 0);
-				player.velocity.set(GRAVITY * FlxMath.fastSin(player.angle * FlxAngle.TO_RAD));
-				player.velocity.rotateByDegrees(player.angle);
-				isTouchingSomething = true;
+		if (!skipGravity) {
+			pVelocity.y += GRAVITY * elapsed;
+		}
+		var playerPos = new FlxPoint(player.x + player.width / 2, player.y + player.height);
+		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
+		for (i in 1...terrainGen.terrainPoints.length) {
+			var lineStart = terrainGen.terrainPoints[i - 1];
+			var lineEnd = terrainGen.terrainPoints[i];
+			var intersection = intersectsBounded(playerPos, nextPos, lineStart, lineEnd);
+			if (intersection == null) {
+				continue;
 			}
-		});
-		if (!isTouchingSomething) {
-			player.acceleration.y = GRAVITY;
-		}
-	}
-
-	private function rotatePlayer() {
-		var playerPositions = [
-			Std.int(player.x),
-			Std.int(player.x + player.width / 2),
-			Std.int(player.x + player.width)
-		];
-		var pointsBelow = [-1.0, -1.0, -1.0];
-		segments.forEachAlive(segment -> {
-			if (segment.x > playerPositions[1] || segment.x + segment.width < playerPositions[1]) {
-				return;
+			nextPos = intersection;
+			skipGravity = true;
+			pVelocity.set(0, 0);
+			debugDot.setPosition(intersection.x, intersection.y);
+			for (i in 0...10) {
+				var s = new FlxSprite(lineStart.x + (lineEnd.x - lineStart.x) / 10 * i, lineStart.y + (lineEnd.y - lineStart.y) / 10 * i);
+				s.makeGraphic(4, 4, FlxColor.YELLOW);
+				add(s);
 			}
-			segment.drawFrame();
-			var bitmap = segment.framePixels;
-			for (x in 0...playerPositions.length) {
-				for (y in Std.int(segment.y)...Std.int(segment.y + segment.height)) {
-					if (bitmap.getPixel(playerPositions[x] - Std.int(segment.x), Std.int(y - segment.y)) > 0) {
-						pointsBelow[x] = y;
-						break;
-					}
-				}
-			}
-		});
-		if (pointsBelow[1] == -1.0) {
-			player.angle = 0;
-			return;
+			break;
 		}
-		var w = 0.0, h = 0.0;
-		if (pointsBelow[0] != -1.0 && pointsBelow[1] != -1.0) {
-			w = playerPositions[1] - playerPositions[0];
-			h = pointsBelow[1] - pointsBelow[0];
-		}
-		else if (pointsBelow[1] != -1.0 && pointsBelow[2] != -1.0) {
-			w = playerPositions[2] - playerPositions[1];
-			h = pointsBelow[2] - pointsBelow[1];
-		}
-		player.angle = Math.atan2(h, w) * FlxAngle.TO_DEG;
-		// Compensate for player slightly sinking into the ground
-		if (pointsBelow[1] < player.y + player.height) {
-			player.y--;
-		}
+		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height);
+		debugDot.setPosition(playerPos.x, playerPos.y);
+		nextPos.put();
 	}
 
 	// Thanks, Copilot
@@ -118,14 +100,23 @@ class PlayState extends FlxState {
 	}
 
 	// Thanks, Copilot
-	private function intersectsBounded(l1s:FlxPoint, l1e:FlxPoint, l2s:FlxPoint, l2e:FlxPoint):Bool {
+	private function intersectsBounded(l1s:FlxPoint, l1e:FlxPoint, l2s:FlxPoint, l2e:FlxPoint):FlxPoint {
+		// trace("l1s:", l1s.x, l1s.y);
+		// trace("l1e:", l1e.x, l1e.y);
+		// trace("l2s:", l2s.x, l2s.y);
+		// trace("l2e:", l2e.x, l2e.y);
 		var intersection = lineIntersection(l1s, l1e, l2s, l2e);
 		if (intersection == null) {
-			return false;
+			return null;
 		}
-		return (intersection.x >= l1s.x && intersection.x <= l1e.x || intersection.x >= l1e.x && intersection.x <= l1s.x)
+		if ((intersection.x >= l1s.x && intersection.x <= l1e.x || intersection.x >= l1e.x && intersection.x <= l1s.x)
 			&& (intersection.y >= l1s.y && intersection.y <= l1e.y || intersection.y >= l1e.y && intersection.y <= l1s.y)
 			&& (intersection.x >= l2s.x && intersection.x <= l2e.x || intersection.x >= l2e.x && intersection.x <= l2s.x)
-			&& (intersection.y >= l2s.y && intersection.y <= l2e.y || intersection.y >= l2e.y && intersection.y <= l2s.y);
+			&& (intersection.y >= l2s.y && intersection.y <= l2e.y || intersection.y >= l2e.y && intersection.y <= l2s.y)) {
+			return intersection;
+		}
+		else {
+			return null;
+		}
 	}
 }
