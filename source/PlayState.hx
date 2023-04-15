@@ -29,6 +29,7 @@ class PlayState extends FlxState {
 	private var terrainGen:TerrainGen;
 	private var player:Player;
 	private var segments:FlxSpriteGroup;
+	private var segmentPaddings:FlxSpriteGroup;
 	private var debugDot:FlxSprite;
 	private var springrolls:FlxSpriteGroup;
 	private var bombs:FlxSpriteGroup;
@@ -39,6 +40,7 @@ class PlayState extends FlxState {
 		pVelocity = new FlxPoint(10, 0);
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
+		segmentPaddings = new FlxSpriteGroup();
 		springrolls = new FlxSpriteGroup();
 		bombs = new FlxSpriteGroup();
 
@@ -46,6 +48,7 @@ class PlayState extends FlxState {
 			addSegment();
 		}
 		add(segments);
+		add(segmentPaddings);
 		add(springrolls);
 		add(bombs);
 		// for (p in terrainGen.terrainPoints) {
@@ -96,8 +99,13 @@ class PlayState extends FlxState {
 			}
 			FlxG.worldBounds.set(0, 0, terrainX, terrainY);
 			segments.forEachAlive((segment:FlxSprite) -> {
-				if (segment.x < player.x - FlxG.width) {
+				if (segment.x < player.x - FlxG.width * 2) {
 					segment.destroy();
+				}
+			});
+			segmentPaddings.forEachAlive((padding:FlxSprite) -> {
+				if (padding.x < player.x - FlxG.width * 2) {
+					padding.destroy();
 				}
 			});
 		}
@@ -157,12 +165,15 @@ class PlayState extends FlxState {
 
 	private function addSegment() {
 		var segment = terrainGen.getTerrain(terrainX, terrainY);
-		terrainX += segment.width;
-		terrainY += segment.height;
 		segment.immovable = true;
 		segments.add(segment);
 		springrolls.add(segment.springrolls);
 		bombs.add(segment.bombs);
+		var padding = new FlxSprite(terrainX, terrainY + segment.height);
+		padding.makeGraphic(Std.int(segment.width), FlxG.height, FlxColor.GREEN);
+		segmentPaddings.add(padding);
+		terrainX += segment.width;
+		terrainY += segment.height;
 	}
 
 	// Thanks, Copilot
