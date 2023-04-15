@@ -20,6 +20,8 @@ class PlayState extends FlxState {
 	private var groundedBuffer:Int = 0;
 	private var score:Int = 0;
 	private var braking = 0;
+	private var terrainX = 0.0;
+	private var terrainY = 256.0;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
@@ -31,33 +33,25 @@ class PlayState extends FlxState {
 
 	override public function create() {
 		super.create();
-		pVelocity = new FlxPoint(0, 10);
+		pVelocity = new FlxPoint(10, 0);
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
 		springrolls = new FlxSpriteGroup();
 		bombs = new FlxSpriteGroup();
 
-		var terrainX = 0.0;
-		var terrainY = 256.0;
 		for (_ in 0...20) {
-			var segment = terrainGen.getTerrain(terrainX, terrainY);
-			terrainX += segment.width;
-			terrainY += segment.height;
-			segment.immovable = true;
-			segments.add(segment);
-			springrolls.add(segment.springrolls);
-			bombs.add(segment.bombs);
+			addSegment();
 		}
 		add(segments);
 		add(springrolls);
 		add(bombs);
-		for (p in terrainGen.terrainPoints) {
-			var dot = new FlxSprite(p.x - 2, p.y - 2);
-			dot.makeGraphic(4, 4, FlxColor.BLUE);
-			add(dot);
-		}
+		// for (p in terrainGen.terrainPoints) {
+		// 	var dot = new FlxSprite(p.x - 2, p.y - 2);
+		// 	dot.makeGraphic(4, 4, FlxColor.BLUE);
+		// 	add(dot);
+		// }
 
-		player = new Player(200, 0);
+		player = new Player(32, 0);
 		add(player);
 		debugDot = new FlxSprite(0);
 		debugDot.makeGraphic(4, 4, FlxColor.RED);
@@ -67,6 +61,8 @@ class PlayState extends FlxState {
 		add(hud);
 
 		FlxG.camera.follow(player, LOCKON);
+		FlxG.camera.setScrollBounds(0, null, null, null);
+		FlxG.camera.targetOffset.set(300, 50);
 		FlxG.worldBounds.set(0, 0, segments.width, segments.height);
 	}
 
@@ -142,6 +138,16 @@ class PlayState extends FlxState {
 		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height - 1);
 		debugDot.setPosition(playerPos.x, playerPos.y);
 		predicted.put();
+	}
+
+	private function addSegment() {
+		var segment = terrainGen.getTerrain(terrainX, terrainY);
+		terrainX += segment.width;
+		terrainY += segment.height;
+		segment.immovable = true;
+		segments.add(segment);
+		springrolls.add(segment.springrolls);
+		bombs.add(segment.bombs);
 	}
 
 	// Thanks, Copilot
