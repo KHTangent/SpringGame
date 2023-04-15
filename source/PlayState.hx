@@ -33,8 +33,14 @@ class PlayState extends FlxState {
 			terrainY += segment.height;
 			segment.immovable = true;
 			segments.add(segment);
+			add(segment.springrolls);
 		}
 		add(segments);
+		for (p in terrainGen.terrainPoints) {
+			var dot = new FlxSprite(p.x-2, p.y-2);
+			dot.makeGraphic(4, 4, FlxColor.BLUE);
+			add(dot);
+		}
 
 		player = new Player(200, 0);
 		add(player);
