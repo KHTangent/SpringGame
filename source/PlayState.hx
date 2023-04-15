@@ -8,6 +8,7 @@ import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import objects.Player;
+import objects.Springroll;
 
 class PlayState extends FlxState {
 	private inline static var GRAVITY:Float = 800;
@@ -15,19 +16,24 @@ class PlayState extends FlxState {
 
 	private var FRICTION:Array<Float> = [0.15, 0.35];
 
+	private var pVelocity:FlxPoint;
+	private var groundedBuffer:Int = 0;
+	private var score:Int = 0;
+	private var breaking = 0;
+
 	private var terrainGen:TerrainGen;
 	private var player:Player;
 	private var segments:FlxSpriteGroup;
-	private var pVelocity:FlxPoint;
 	private var debugDot:FlxSprite;
-	private var groundedBuffer:Int = 0;
-	private var breaking = 0;
+	private var springrolls:FlxSpriteGroup;
+	private var hud:HUD;
 
 	override public function create() {
 		super.create();
 		pVelocity = new FlxPoint(0, 10);
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
+		springrolls = new FlxSpriteGroup();
 		var terrainX = 0.0;
 		var terrainY = 256.0;
 		for (_ in 0...20) {
@@ -36,9 +42,10 @@ class PlayState extends FlxState {
 			terrainY += segment.height;
 			segment.immovable = true;
 			segments.add(segment);
-			add(segment.springrolls);
+			springrolls.add(segment.springrolls);
 		}
 		add(segments);
+		add(springrolls);
 		for (p in terrainGen.terrainPoints) {
 			var dot = new FlxSprite(p.x - 2, p.y - 2);
 			dot.makeGraphic(4, 4, FlxColor.BLUE);
@@ -50,6 +57,9 @@ class PlayState extends FlxState {
 		debugDot = new FlxSprite(0);
 		debugDot.makeGraphic(4, 4, FlxColor.RED);
 		add(debugDot);
+
+		hud = new HUD();
+		add(hud);
 
 		FlxG.camera.follow(player, LOCKON);
 		FlxG.worldBounds.set(0, 0, segments.width, segments.height);
@@ -63,6 +73,12 @@ class PlayState extends FlxState {
 		}
 		handleMovement(elapsed);
 		player.grounded = groundedBuffer > 0;
+
+		FlxG.overlap(player, springrolls, (player:Player, springroll:Springroll) -> {
+			score += springroll.value;
+			springroll.kill();
+			hud.setScore(score);
+		});
 	}
 
 	private function handleMovement(elapsed:Float) {
