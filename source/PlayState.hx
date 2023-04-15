@@ -1,9 +1,9 @@
 package;
 
-import flixel.addons.display.FlxBackdrop;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.addons.display.FlxBackdrop;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
@@ -31,7 +31,6 @@ class PlayState extends FlxState {
 	private var player:Player;
 	private var segments:FlxSpriteGroup;
 	private var segmentPaddings:FlxSpriteGroup;
-	private var debugDot:FlxSprite;
 	private var springrolls:FlxSpriteGroup;
 	private var bombs:FlxSpriteGroup;
 	private var hud:HUD;
@@ -69,9 +68,6 @@ class PlayState extends FlxState {
 
 		player = new Player(32, 0);
 		add(player);
-		debugDot = new FlxSprite(0);
-		debugDot.makeGraphic(4, 4, FlxColor.RED);
-		add(debugDot);
 
 		hud = new HUD();
 		add(hud);
@@ -104,10 +100,12 @@ class PlayState extends FlxState {
 			hud.setScore(score);
 		});
 		FlxG.overlap(player, bombs, (player:Player, bomb:Bomb) -> {
-			player.kill();
-			FlxG.camera.target = null;
-			FlxG.camera.fade(FlxColor.BLACK, 1.5, FlxG.resetGame, true);
-			add(bomb.explode());
+			if (FlxG.pixelPerfectOverlap(player, bomb)) {
+				player.kill();
+				FlxG.camera.target = null;
+				FlxG.camera.fade(FlxColor.BLACK, 1.5, FlxG.resetGame, true);
+				add(bomb.explode());
+			}
 		});
 
 		while (terrainX - player.x < GENERATION_TRESHOLD) {
@@ -146,7 +144,6 @@ class PlayState extends FlxState {
 			player.origin.x = player.width / 2;
 			player.origin.y = player.height;
 			player.angle = Math.atan2(normalVector.y, normalVector.x) * FlxAngle.TO_DEG + 90;
-			debugDot.setPosition(intersection.x, intersection.y);
 			var normalForce = pVelocity.dotProduct(normalVector);
 			pVelocity.x -= normalVector.x * normalForce;
 			pVelocity.y -= normalVector.y * normalForce;
@@ -176,7 +173,6 @@ class PlayState extends FlxState {
 
 		var nextPos = FlxPoint.get(playerPos.x + pVelocity.x * elapsed, playerPos.y + pVelocity.y * elapsed);
 		player.setPosition(nextPos.x - player.width / 2, nextPos.y - player.height - 1);
-		debugDot.setPosition(playerPos.x, playerPos.y);
 		predicted.put();
 	}
 
