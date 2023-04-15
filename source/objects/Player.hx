@@ -46,7 +46,7 @@ class Player extends FlxSprite {
 		compressionIndex = 0;
 
 		normalImages = ["normal0", "normal1", "normal2", "normal3"];
-		fallingImages = ["falling", "falling", "falling", "falling"];
+		fallingImages = ["falling0", "falling1", "falling2", "falling3"];
 	}
 
 	override public function update(elapsed:Float):Void {
@@ -78,7 +78,7 @@ class Player extends FlxSprite {
 		compressionIndex = Math.floor(4 * charge / maxCharge);
 		if (compressionIndex == 4) compressionIndex--;
 
-		if (grounded || velocity.y >= 0) animation.play(normalImages[compressionIndex]);
+		if (grounded || velocity.y <= 0) animation.play(normalImages[compressionIndex]);
 		else animation.play(fallingImages[compressionIndex]);
 
 		super.update(elapsed);
