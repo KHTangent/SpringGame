@@ -28,7 +28,7 @@ class PlayState extends FlxState {
 		var terrainX = 0.0;
 		var terrainY = 256.0;
 		for (_ in 0...20) {
-			var segment = terrainGen.getTerrain(terrainX, terrainY, FlxColor.GREEN);
+			var segment = terrainGen.getTerrain(terrainX, terrainY);
 			terrainX += segment.width;
 			terrainY += segment.height;
 			segment.immovable = true;
