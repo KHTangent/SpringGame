@@ -70,6 +70,8 @@ class PlayState extends FlxState {
 			hasTouched = true;
 			predicted = intersection;
 			var normalVector = (new FlxPoint(lineEnd.y - lineStart.y, lineStart.x - lineEnd.x)).normalize();
+			player.origin.x = player.width / 2;
+			player.origin.y = player.height;
 			player.angle = Math.atan2(normalVector.y, normalVector.x) * FlxAngle.TO_DEG + 90;
 			debugDot.setPosition(intersection.x, intersection.y);
 			var normalForce = pVelocity.dotProduct(normalVector);
