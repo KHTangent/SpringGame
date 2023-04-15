@@ -13,6 +13,8 @@ enum abstract TileTypes(Int) to Int {
 }
 
 class TerrainGen {
+	public var terrainPoints:Array<FlxPoint> = [];
+
 	private var tileSize:Int;
 	private var terrains = [
 		[
@@ -33,12 +35,8 @@ class TerrainGen {
 			[1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
 			[1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
 			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-		], 
-		[
-			[1, 0, 0],
-			[1, 1, 0],
-			[1, 1, 1],
-		]
+		],
+		[[1, 0, 0], [1, 1, 0], [1, 1, 1]]
 	];
 
 	public function new(tileSize:Int) {
@@ -46,14 +44,17 @@ class TerrainGen {
 	}
 
 	public function getTerrain(x:Float, y:Float, color:FlxColor):FlxSprite {
+		if (terrainPoints.length > 0) {
+			terrainPoints.push(FlxPoint.get(0, 0));
+		}
 		var segment = terrains[FlxG.random.int(0, terrains.length - 1)];
 		var terrain = new FlxSprite(x, y);
 		terrain.makeGraphic(segment[0].length * tileSize, segment.length * tileSize, FlxColor.TRANSPARENT);
-		terrain.drawPolygon(interpolatePoints(segment), color);
+		terrain.drawPolygon(interpolatePoints(x, y, segment), color);
 		return terrain;
 	}
 
-	private function interpolatePoints(segment:Array<Array<Int>>):Array<FlxPoint> {
+	private function interpolatePoints(x:Float, y:Float, segment:Array<Array<Int>>):Array<FlxPoint> {
 		var points = [FlxPoint.weak(0, 0)];
 		var maxX = segment[0].length;
 		var maxY = segment.length;
@@ -67,8 +68,10 @@ class TerrainGen {
 				currentX++;
 			}
 			points.push(FlxPoint.weak(currentX * tileSize, (currentY + 1) * tileSize));
+			terrainPoints.push(FlxPoint.get(currentX * tileSize + x, (currentY + 1) * tileSize + y));
 		}
 		points.push(FlxPoint.weak(maxX * tileSize, maxY * tileSize));
+		terrainPoints.push(FlxPoint.get(maxX * tileSize + x, maxY * tileSize + y));
 		points.push(FlxPoint.weak(0, maxY * tileSize));
 		return points;
 	}
