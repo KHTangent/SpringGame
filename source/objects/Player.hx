@@ -5,6 +5,7 @@ import flixel.FlxG;
 import flixel.math.FlxRandom;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
+import flixel.math.FlxPoint;
 
 class Player extends FlxSprite {
 
@@ -49,28 +50,21 @@ class Player extends FlxSprite {
 	}
 
 	override public function update(elapsed:Float):Void {
-		super.update(elapsed);
+		
 
 		holding = FlxG.keys.pressed.SPACE;
 		grounded = (acceleration.y == 0);
 
 		charge += elapsed * (cast holding ? 1 : 0);
 
-		acceleration.x *= (cast FlxG.keys.pressed.PAGEUP ? 0 : 1);
-		acceleration.y *= (cast FlxG.keys.pressed.PAGEUP ? 0 : 1);
-
-		velocity.x *= (cast FlxG.keys.pressed.PAGEDOWN ? 0 : 1);
-		velocity.y *= (cast FlxG.keys.pressed.PAGEDOWN ? 0 : 1);
-
-		if (!holding) {
-			xPlus = 20 * charge * FlxMath.fastCos(angle) * (cast grounded ? 1 : 0);
-			yPlus = 20 * charge * FlxMath.fastSin(angle) * (cast grounded ? 1 : 0);
-
-			velocity.x += xPlus;
-			velocity.y += yPlus;
-
-			x -= xPlus;
-			y -= yPlus;
+		if (!holding && wasHolding) {
+			
+			var jump = FlxPoint.weak(0, -charge * 500).rotateByDegrees(angle);
+			x += jump.x / 10;
+			y += jump.y / 10;
+			velocity.add(jump.x, jump.y);
+			
+			trace(grounded);
 
 
 
@@ -86,5 +80,7 @@ class Player extends FlxSprite {
 
 		if (grounded || velocity.y >= 0) animation.play(normalImages[compressionIndex]);
 		else animation.play(fallingImages[compressionIndex]);
+
+		super.update(elapsed);
 	}
 }
