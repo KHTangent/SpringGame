@@ -16,11 +16,10 @@ class PlayState extends FlxState {
 	private inline static var DRAG_CO:Float = 0.0000005;
 
 	private var FRICTION:Array<Float> = [0.15, 0.35];
-
 	private var pVelocity:FlxPoint;
 	private var groundedBuffer:Int = 0;
 	private var score:Int = 0;
-	private var breaking = 0;
+	private var braking = 0;
 
 	private var terrainGen:TerrainGen;
 	private var player:Player;
@@ -73,7 +72,7 @@ class PlayState extends FlxState {
 
 	override public function update(elapsed:Float) {
 		super.update(elapsed);
-		breaking = cast FlxG.keys.pressed.SHIFT ? 1 : 0;
+		braking = cast FlxG.keys.pressed.SHIFT ? 1 : 0;
 		if (FlxG.keys.pressed.CONTROL && FlxG.keys.justReleased.R) {
 			FlxG.resetGame();
 		}
@@ -115,7 +114,7 @@ class PlayState extends FlxState {
 			var normalForce = pVelocity.dotProduct(normalVector);
 			pVelocity.x -= normalVector.x * normalForce;
 			pVelocity.y -= normalVector.y * normalForce;
-			var frictionVector = pVelocity.clone().scale(-FRICTION[breaking]);
+			var frictionVector = pVelocity.clone().scale(-FRICTION[braking]);
 			pVelocity.add(frictionVector.x, frictionVector.y);
 
 			break;
