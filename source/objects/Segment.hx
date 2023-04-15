@@ -20,6 +20,12 @@ class Segment extends FlxSprite {
 		makeGraphic(data[0].length * tileSize, data.length * tileSize, FlxColor.TRANSPARENT, true);
 		antialiasing = true;
 		this.drawPolygon(interpolatedPoints, FlxColor.GREEN);
+		for (i in 1...interpolatedPoints.length - 1) {
+			this.drawLine(interpolatedPoints[i - 1].x, interpolatedPoints[i - 1].y, interpolatedPoints[i].x, interpolatedPoints[i].y, {
+				color: FlxColor.fromRGB(0, 100, 0),
+				thickness: 3
+			});
+		}
 		deathTriggers = new FlxSpriteGroup();
 		springrolls = new FlxSpriteGroup();
 		bombs = new FlxSpriteGroup();
