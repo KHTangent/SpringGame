@@ -12,6 +12,7 @@ class Segment extends FlxSprite {
 	public var terrainPoints:Array<FlxPoint> = [];
 	public var deathTriggers:FlxSpriteGroup;
 	public var springrolls:FlxSpriteGroup;
+	public var bombs:FlxSpriteGroup;
 
 	public function new(x:Float, y:Float, data:Array<Array<Int>>, tileSize = 64) {
 		super(x, y);
@@ -21,11 +22,13 @@ class Segment extends FlxSprite {
 		this.drawPolygon(interpolatedPoints, FlxColor.GREEN);
 		deathTriggers = new FlxSpriteGroup();
 		springrolls = new FlxSpriteGroup();
+		bombs = new FlxSpriteGroup();
 
 		for (tileY in 0...data.length) {
 			for (tileX in 0...data[tileY].length) {
 				switch (data[tileY][tileX]) {
 					case DEATH:
+						bombs.add(new Bomb(x + tileX * tileSize, y + tileY * tileSize));
 					case SPRINGROLL:
 						springrolls.add(new Springroll(x + tileX * tileSize, y + tileY * tileSize, 10));
 					case SUPERROLL:

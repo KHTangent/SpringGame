@@ -1,5 +1,6 @@
 package;
 
+import objects.Bomb;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -26,6 +27,7 @@ class PlayState extends FlxState {
 	private var segments:FlxSpriteGroup;
 	private var debugDot:FlxSprite;
 	private var springrolls:FlxSpriteGroup;
+	private var bombs:FlxSpriteGroup;
 	private var hud:HUD;
 
 	override public function create() {
@@ -34,6 +36,8 @@ class PlayState extends FlxState {
 		terrainGen = new TerrainGen(64);
 		segments = new FlxSpriteGroup();
 		springrolls = new FlxSpriteGroup();
+		bombs = new FlxSpriteGroup();
+
 		var terrainX = 0.0;
 		var terrainY = 256.0;
 		for (_ in 0...20) {
@@ -43,9 +47,11 @@ class PlayState extends FlxState {
 			segment.immovable = true;
 			segments.add(segment);
 			springrolls.add(segment.springrolls);
+			bombs.add(segment.bombs);
 		}
 		add(segments);
 		add(springrolls);
+		add(bombs);
 		for (p in terrainGen.terrainPoints) {
 			var dot = new FlxSprite(p.x - 2, p.y - 2);
 			dot.makeGraphic(4, 4, FlxColor.BLUE);
@@ -78,6 +84,12 @@ class PlayState extends FlxState {
 			score += springroll.value;
 			springroll.kill();
 			hud.setScore(score);
+		});
+		FlxG.overlap(player, bombs, (player:Player, bomb:Bomb) -> {
+			player.kill();
+			FlxG.camera.target = null;
+			FlxG.camera.fade(FlxColor.BLACK, 1.5, null, true);
+			bomb.kill();
 		});
 	}
 
