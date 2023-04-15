@@ -4,7 +4,6 @@ import flixel.FlxG;
 import flixel.FlxState;
 import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxAngle;
-import flixel.util.FlxCollision;
 import flixel.util.FlxColor;
 import objects.Player;
 
@@ -61,9 +60,10 @@ class PlayState extends FlxState {
 			if (segment.x > playerPositions[1] || segment.x + segment.width < playerPositions[1]) {
 				return;
 			}
+			var bitmap = segment.framePixels;
 			for (x in 0...playerPositions.length) {
 				for (y in Std.int(playerPositions[x])...Std.int(segment.y + segment.height)) {
-					if (FlxCollision.pixelPerfectPointCheck(playerPositions[x], y, segment)) {
+					if (bitmap.getPixel(playerPositions[x] - Std.int(segment.x), Std.int(y - segment.y)) > 0) {
 						pointsBelow[x] = y;
 						break;
 					}
