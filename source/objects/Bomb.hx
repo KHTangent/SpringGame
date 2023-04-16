@@ -12,6 +12,7 @@ class Bomb extends FlxSprite {
 	public function new(x:Float, y:Float) {
 		super(x, y);
 		loadGraphic("assets/images/misc/bomb.png", false, 48, 48);
+		flipX = FlxG.random.bool();
 		explosionSound = FlxG.sound.load("assets/sounds/bomb.wav");
 	}
 
