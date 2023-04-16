@@ -11,7 +11,8 @@ class Player extends FlxSprite {
 	private var charge = 0.0;
 	private var wasHolding = false;
 	private var holding = false;
-	private var compressionIndex = 0;
+	private var compressionIndex:Int = 0;
+	private var lastCompression:Int = 0;
 	private var normalImages = ["normal0", "normal1", "normal2", "normal3"];
 	private var fallingImages = ["falling0", "falling1", "falling2", "falling3"];
 
@@ -19,6 +20,10 @@ class Player extends FlxSprite {
 	private var yPlus:Float;
 	private var boingSound:FlxSound;
 	private var loudBoingSound:FlxSound;
+	private var compressionSound0:FlxSound;
+	private var compressionSound1:FlxSound;
+	private var compressionSound2:FlxSound;
+	private var compressionSounds:Array<FlxSound>;
 
 	public var grounded = false;
 	public var jumpAddVector:FlxPoint = null;
@@ -40,6 +45,11 @@ class Player extends FlxSprite {
 		animation.add("falling1", [5]);
 		animation.add("falling2", [6]);
 		animation.add("falling3", [7]);
+
+		compressionSound0 = FlxG.sound.load("assets/sounds/compress0.wav", 0.5);
+		compressionSound1 = FlxG.sound.load("assets/sounds/compress1.wav", 0.5);
+		compressionSound2 = FlxG.sound.load("assets/sounds/compress2.wav", 0.5);
+		compressionSounds = [compressionSound0, compressionSound1, compressionSound2];
 	}
 
 	override public function update(elapsed:Float):Void {
@@ -71,6 +81,11 @@ class Player extends FlxSprite {
 		if (compressionIndex == 4) {
 			compressionIndex--;
 		}
+
+		if (compressionIndex > lastCompression) {
+			compressionSounds[lastCompression].play(true);
+		}
+		lastCompression = compressionIndex;
 
 		if (grounded || !falling) {
 			animation.play(normalImages[compressionIndex]);
