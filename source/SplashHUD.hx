@@ -4,6 +4,8 @@ import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 
+using StringTools;
+
 class SplashHUD extends FlxSpriteGroup {
 	private var splashText:FlxText;
 	private var blinkTimer:Float = 0;
@@ -27,6 +29,13 @@ class SplashHUD extends FlxSpriteGroup {
 		var copyrightText = new FlxText(16, FlxG.height - 32, 0, FlxG.random.bool() ? "(c) 2023 deddpewl and KHTangent" : "(c) 2023 KHTangent and deddpewl",
 			16);
 		add(copyrightText);
+
+		var score = ScoreManager.getHighScore();
+		if (score > 0) {
+			var highScoreText = new FlxText(0, FlxG.height - 32, 0, "High score: " + ("" + score).lpad("0", 5), 16);
+			highScoreText.x = FlxG.width - highScoreText.width - 16;
+			add(highScoreText);
+		}
 	}
 
 	override function update(elapsed:Float) {

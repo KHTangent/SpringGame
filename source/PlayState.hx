@@ -39,6 +39,7 @@ class PlayState extends FlxState {
 
 	override public function create() {
 		super.create();
+		ScoreManager.initialize();
 
 		for (i in 0...5) {
 			var bg = new FlxBackdrop('assets/images/background/layer$i.png', X);
@@ -105,6 +106,7 @@ class PlayState extends FlxState {
 				FlxG.camera.target = null;
 				FlxG.camera.fade(FlxColor.BLACK, 1.5, FlxG.resetGame, true);
 				add(bomb.explode());
+				ScoreManager.saveHighScore(score);
 			}
 		});
 
