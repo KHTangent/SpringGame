@@ -3,26 +3,32 @@ package objects;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxPoint;
+import flixel.system.FlxSound;
 
 class Player extends FlxSprite {
-	var charge:Float;
-	var wasHolding:Bool;
-	var holding:Bool;
-	var compressionIndex:Int;
-	var maxCharge:Float;
-	var normalImages:Array<String>;
-	var fallingImages:Array<String>;
+	private static inline var MAX_CHARGE = 2.0;
 
-	public var grounded:Bool;
+	private var charge = 0.0;
+	private var wasHolding = false;
+	private var holding = false;
+	private var compressionIndex = 0;
+	private var normalImages = ["normal0", "normal1", "normal2", "normal3"];
+	private var fallingImages = ["falling0", "falling1", "falling2", "falling3"];
+
+	private var xPlus:Float;
+	private var yPlus:Float;
+	private var boingSound:FlxSound;
+	private var loudBoingSound:FlxSound;
+
+	public var grounded = false;
 	public var jumpAddVector:FlxPoint = null;
-	public var falling:Bool;
-
-	var xPlus:Float;
-	var yPlus:Float;
+	public var falling = true;
 
 	public function new(x:Float, y:Float) {
 		super(x, y);
 		loadGraphic("assets/images/playerSprites/player.png", true);
+		boingSound = FlxG.sound.load("assets/sounds/boing.wav", 0.5);
+		loudBoingSound = FlxG.sound.load("assets/sounds/boing.wav", 1);
 		antialiasing = true;
 
 		animation.add("normal0", [0]);
@@ -34,44 +40,44 @@ class Player extends FlxSprite {
 		animation.add("falling1", [5]);
 		animation.add("falling2", [6]);
 		animation.add("falling3", [7]);
-
-		charge = 0;
-		wasHolding = false;
-		holding = false;
-		
-		falling = true;
-		grounded = false;
-
-		maxCharge = 2;
-		compressionIndex = 0;
-
-		normalImages = ["normal0", "normal1", "normal2", "normal3"];
-		fallingImages = ["falling0", "falling1", "falling2", "falling3"];
 	}
 
 	override public function update(elapsed:Float):Void {
 		holding = FlxG.keys.pressed.SPACE;
 
-		charge += elapsed * (cast holding ? 1 : 0);
+		if (holding) {
+			charge += elapsed;
+		}
 
 		if (!holding && wasHolding) {
-			jumpAddVector = FlxPoint.weak(0, -charge * 500 * (cast grounded ? 1 : 0)).rotateByDegrees(angle);
+			if (grounded) {
+				jumpAddVector = FlxPoint.weak(0, -charge * 500).rotateByDegrees(angle);
+				if (charge > MAX_CHARGE / 2) {
+					loudBoingSound.play(true);
+				}
+				else {
+					boingSound.play(true);
+				}
+			}
 
 			charge = 0;
 		}
 		wasHolding = holding;
 
 		charge = Math.max(0, charge);
-		charge = Math.min(maxCharge, charge);
+		charge = Math.min(MAX_CHARGE, charge);
 
-		compressionIndex = Math.floor(4 * charge / maxCharge);
-		if (compressionIndex == 4)
+		compressionIndex = Math.floor(4 * charge / MAX_CHARGE);
+		if (compressionIndex == 4) {
 			compressionIndex--;
+		}
 
-		if (grounded || !falling)
+		if (grounded || !falling) {
 			animation.play(normalImages[compressionIndex]);
-		else
+		}
+		else {
 			animation.play(fallingImages[compressionIndex]);
+		}
 
 		super.update(elapsed);
 	}
